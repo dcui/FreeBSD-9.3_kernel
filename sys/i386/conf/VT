@@ -1,0 +1,14 @@
+# VT -- kernel config using the vt(9) system console instead of legacy syscons
+#                                                                              
+# For more information see https://wiki.freebsd.org/Newcons
+#
+# $FreeBSD: releng/9.3/sys/i386/conf/VT 263821 2014-03-27 16:55:12Z gjb $
+
+include		GENERIC
+ident		VT
+
+nodevice	sc
+nodevice	vga
+
+device		vt
+device		vt_vga
