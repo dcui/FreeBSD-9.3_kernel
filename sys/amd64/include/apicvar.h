@@ -225,5 +225,7 @@ int	lapic_set_lvt_triggermode(u_int apic_id, u_int lvt,
 void	lapic_set_tpr(u_int vector);
 void	lapic_setup(int boot);
 
+void   hv_vector_handler(struct trapframe *frame);
+
 #endif /* !LOCORE */
 #endif /* _MACHINE_APICVAR_H_ */

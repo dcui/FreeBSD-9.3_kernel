@@ -639,3 +639,6 @@ device		ndis
 
 # Linux-specific pseudo devices support
 device		lindev
+
+options        HYPERV                  # Hyper-V kernel infrastructure
+device         hyperv                  # HyperV drivers

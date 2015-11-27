@@ -335,7 +335,7 @@ vmbus_identify(driver_t *driver, device_t parent)
 	if (!hv_vmbus_query_hypervisor_presence())
 		return;
 
-	vm_guest = VM_GUEST_HV;
+	//vm_guest = VM_GUEST_HV;
 
 	BUS_ADD_CHILD(parent, 0, "vmbus", 0);
 }
@@ -612,8 +612,10 @@ vmbus_attach(device_t dev)
 static void
 vmbus_init(void)
 {
+#if 0
 	if (vm_guest != VM_GUEST_HV)
 		return;
+#endif
 
 	/* 
 	 * If the system has already booted and thread

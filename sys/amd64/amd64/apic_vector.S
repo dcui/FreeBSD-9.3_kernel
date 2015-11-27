@@ -128,6 +128,18 @@ IDTVEC(errorint)
 	MEXITCOUNT
 	jmp	doreti
 
+ 	.text
+  	SUPERALIGN_TEXT
+#ifdef HYPERV
+IDTVEC(hv_vmbus_callback)
+	PUSH_FRAME
+	FAKE_MCOUNT(TF_RIP(%rsp))
+	movq    %rsp, %rdi
+	call    hv_vector_handler
+	MEXITCOUNT
+	jmp     doreti
+#endif
+
 #ifdef SMP
 /*
  * Global address space TLB shootdown.

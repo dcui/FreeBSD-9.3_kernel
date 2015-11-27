@@ -645,11 +645,11 @@ typedef struct rndis_offload_params_ {
 	struct {
 		uint8_t rsc_ipv4;
 		uint8_t rsc_ipv6;
-	};
+	} u;
 	struct {
 		uint8_t encapsulated_packet_task_offload;
 		uint8_t encapsulation_types;
-	};
+	} u2;
 
 } rndis_offload_params;
 
@@ -677,7 +677,7 @@ typedef struct rndis_tcp_ip_csum_info_ {
 			uint32_t ip_csum_value_invalid:1;
 		} receive;
 		uint32_t  value;
-	};
+	} u;
 } rndis_tcp_ip_csum_info;
 
 typedef struct rndis_tcp_tso_info_ {
@@ -710,7 +710,7 @@ typedef struct rndis_tcp_tso_info_ {
 			uint32_t reserved2:1;
 		} lso_v2_xmit_complete;
 		uint32_t  value;
-	};
+	} u;
 } rndis_tcp_tso_info;
 
 #define RNDIS_VLAN_PPI_SIZE	(sizeof(rndis_per_packet_info) + \

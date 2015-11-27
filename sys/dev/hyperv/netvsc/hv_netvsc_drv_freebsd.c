@@ -489,7 +489,7 @@ hn_start_locked(struct ifnet *ifp)
 			device_printf(dev, "exceed max page buffers,%d,%d\n",
 			    num_frags, NETVSC_PACKET_MAXPAGE);
 			m_freem(m_head);
-			if_inc_counter(ifp, IFCOUNTER_OERRORS, 1);
+			//if_inc_counter(ifp, IFCOUNTER_OERRORS, 1);
 			return (EINVAL);
 		}
 
@@ -514,7 +514,7 @@ hn_start_locked(struct ifnet *ifp)
 		if (buf == NULL) {
 			device_printf(dev, "hn:malloc packet failed\n");
 			m_freem(m_head);
-			if_inc_counter(ifp, IFCOUNTER_OERRORS, 1);
+			//if_inc_counter(ifp, IFCOUNTER_OERRORS, 1);
 			return (ENOMEM);
 		}
 
@@ -602,16 +602,16 @@ hn_start_locked(struct ifnet *ifp)
 		    rppi->per_packet_info_offset);
 
 		if (trans_proto_type & (TYPE_IPV4 << 16)) {
-			csum_info->xmit.is_ipv4 = 1;
+			csum_info->u.xmit.is_ipv4 = 1;
 		} else {
-			csum_info->xmit.is_ipv6 = 1;
+			csum_info->u.xmit.is_ipv6 = 1;
 		}
 
 		if (trans_proto_type & TYPE_TCP) {
-			csum_info->xmit.tcp_csum = 1;
-			csum_info->xmit.tcp_header_offset = 0;
+			csum_info->u.xmit.tcp_csum = 1;
+			csum_info->u.xmit.tcp_header_offset = 0;
 		} else if (trans_proto_type & TYPE_UDP) {
-			csum_info->xmit.udp_csum = 1;
+			csum_info->u.xmit.udp_csum = 1;
 		}
 
 		goto pre_send;
@@ -624,7 +624,7 @@ do_tso:
 		
 		tso_info = (rndis_tcp_tso_info *)((char *)rppi +
 		    rppi->per_packet_info_offset);
-		tso_info->lso_v2_xmit.type =
+		tso_info->u.lso_v2_xmit.type =
 		    RNDIS_TCP_LARGE_SEND_OFFLOAD_V2_TYPE;
 		
 #ifdef INET
@@ -635,7 +635,7 @@ do_tso:
 			struct tcphdr *th =
 			    (struct tcphdr *)((caddr_t)ip + iph_len);
 		
-			tso_info->lso_v2_xmit.ip_version =
+			tso_info->u.lso_v2_xmit.ip_version =
 			    RNDIS_TCP_LARGE_SEND_OFFLOAD_IPV4;
 			ip->ip_len = 0;
 			ip->ip_sum = 0;
@@ -654,14 +654,14 @@ do_tso:
 			    (struct ip6_hdr *)(m_head->m_data + ether_len);
 			struct tcphdr *th = (struct tcphdr *)(ip6 + 1);
 
-			tso_info->lso_v2_xmit.ip_version =
+			tso_info->u.lso_v2_xmit.ip_version =
 			    RNDIS_TCP_LARGE_SEND_OFFLOAD_IPV6;
 			ip6->ip6_plen = 0;
 			th->th_sum = in6_cksum_pseudo(ip6, 0, IPPROTO_TCP, 0);
 		}
 #endif
-		tso_info->lso_v2_xmit.tcp_header_offset = 0;
-		tso_info->lso_v2_xmit.mss = m_head->m_pkthdr.tso_segsz;
+		tso_info->u.lso_v2_xmit.tcp_header_offset = 0;
+		tso_info->u.lso_v2_xmit.mss = m_head->m_pkthdr.tso_segsz;
 
 pre_send:
 		rndis_mesg->msg_len = packet->tot_data_buf_len + rndis_msg_size;
@@ -774,7 +774,7 @@ retry_send:
 			 * send completion
 			 */
 			netvsc_xmit_completion(packet);
-			if_inc_counter(ifp, IFCOUNTER_OERRORS, 1);
+			//if_inc_counter(ifp, IFCOUNTER_OERRORS, 1);
 		}
 
 		/* if bpf && mc_head, free the mbuf chain copy */
@@ -927,13 +927,13 @@ netvsc_recv(struct hv_device *device_ctx, netvsc_packet *packet,
 	m_new->m_pkthdr.csum_flags = 0;
 	if (NULL != csum_info) {
 		/* IP csum offload */
-		if (csum_info->receive.ip_csum_succeeded) {
+		if (csum_info->u.receive.ip_csum_succeeded) {
 			m_new->m_pkthdr.csum_flags |=
 			    (CSUM_IP_CHECKED | CSUM_IP_VALID);
 		}
 
 		/* TCP csum offload */
-		if (csum_info->receive.tcp_csum_succeeded) {
+		if (csum_info->u.receive.tcp_csum_succeeded) {
 			m_new->m_pkthdr.csum_flags |=
 			    (CSUM_DATA_VALID | CSUM_PSEUDO_HDR);
 			m_new->m_pkthdr.csum_data = 0xffff;
@@ -1142,12 +1142,12 @@ hn_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data)
 
 		if (mask & IFCAP_TSO4) {
 			ifp->if_capenable ^= IFCAP_TSO4;
-			ifp->if_hwassist ^= CSUM_IP_TSO;
+			ifp->if_hwassist ^= CSUM_TSO;
 		}
 
 		if (mask & IFCAP_TSO6) {
 			ifp->if_capenable ^= IFCAP_TSO6;
-			ifp->if_hwassist ^= CSUM_IP6_TSO;
+			//ifp->if_hwassist ^= CSUM_IP6_TSO; //cdx: no CSUM_TSO6
 		}
 
 		error = 0;

@@ -94,8 +94,10 @@ hv_ata_pci_probe(device_t dev)
 	/*
 	 * Don't probe if not running in a Hyper-V environment
 	 */
+#if 0
 	if (vm_guest != VM_GUEST_HV)
 		return (ENXIO);
+#endif
 
 	if (device_get_unit(parent) != 0 || device_get_ivars(dev) != 0)
 		return (ENXIO);

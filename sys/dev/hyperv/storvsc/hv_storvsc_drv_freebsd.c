@@ -1296,8 +1296,14 @@ storvsc_timeout(void *arg)
 		mtx_unlock(&sc->hs_lock);
 
 		reqp->retries++;
+#if 0
+		// FreeBSD 9.3 doesn't have callout_reset_sbt().
 		callout_reset_sbt(&reqp->callout, SBT_1MS * ccb->ccb_h.timeout,
 		    0, storvsc_timeout, reqp, 0);
+#else
+		callout_reset(&reqp->callout, ccb->ccb_h.timeout * hz / 1000, storvsc_timeout, reqp);
+#endif
+
 #if HVS_TIMEOUT_TEST
 		storvsc_timeout_test(reqp, SEND_DIAGNOSTIC, 0);
 #endif
@@ -1474,9 +1480,17 @@ storvsc_action(struct cam_sim *sim, union ccb *ccb)
 
 		if (ccb->ccb_h.timeout != CAM_TIME_INFINITY) {
 			callout_init(&reqp->callout, CALLOUT_MPSAFE);
+#if 0
+		// FreeBSD 9.3 doesn't have callout_reset_sbt().
 			callout_reset_sbt(&reqp->callout,
 			    SBT_1MS * ccb->ccb_h.timeout, 0,
 			    storvsc_timeout, reqp, 0);
+#else
+			callout_reset(&reqp->callout,
+			    ccb->ccb_h.timeout * hz /1000,
+			    storvsc_timeout, reqp);
+#endif
+
 #if HVS_TIMEOUT_TEST
 			cv_init(&reqp->event.cv, "storvsc timeout cv");
 			mtx_init(&reqp->event.mtx, "storvsc timeout mutex",
